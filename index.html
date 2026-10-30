@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#151a22">
+<title>토끼 행렬 계산소</title>
+<meta name="description" content="21자리 피보나치 수가 1.618 하나로? — 대각 행렬, 닮음과 대각화 P D P⁻¹, 대각화 조건과 결함 행렬, 거듭제곱의 지름길, 황금비 고유값, 마르코프 체인, 대칭 행렬의 직교 대각화를 손으로 체험하는 앱">
+<style>
+:root{--bg:#151a22;--card:#1c232e;--card2:#25303d;--fg:#eff3f8;--mut:#a3b0c2;--line:#33425a;
+--a:#7cc4ff;--b:#ff9b5c;--ok:#6fdc9a;--bad:#ff7d7d;--gold:#ffd166;--pur:#b79cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.55}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:1.2rem;margin:6px 0}
+h1 small{display:block;font-size:.76rem;color:var(--mut);font-weight:400}
+.tabs{display:flex;gap:5px;margin:10px 0}
+.tabs button{flex:1;padding:9px 2px;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:10px;font-size:.82rem;font-weight:600}
+.tabs button.on{background:#24406e;color:#fff;border-color:var(--a)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+h2{font-size:1rem;margin:2px 0 8px}
+.note{font-size:.86rem;color:var(--mut);margin:8px 0 0}
+.note b{color:var(--fg)}
+.btn{padding:11px 14px;border-radius:12px;border:0;background:linear-gradient(135deg,#2f6fd0,#7cc4ff);color:#fff;font-weight:800;font-size:.95rem;flex:1}
+.btn.sec{background:var(--card2);border:1px solid var(--line);color:var(--fg);font-weight:700}
+.btn.sm{flex:none;padding:7px 11px;font-size:.82rem}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row+.row{margin-top:8px}
+.pill{padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.84rem}
+.pill.on{border-color:var(--gold);background:#4a3e1a;color:#fff}
+.lbl{font-size:.8rem;color:var(--mut)}
+canvas{display:block;width:100%;border-radius:12px;background:#10141b;margin-top:8px}
+.say{background:#16304c;border-left:3px solid var(--a);border-radius:8px;padding:9px 11px;font-size:.92rem;margin-top:10px}
+.say b{color:#fff}
+.say.q{border-left-color:var(--b);background:#2e2118}
+.res{margin-top:10px;font-size:.92rem;border-radius:10px;padding:10px 12px}
+.res.g{background:#16352a;border:1px solid #2f7a52}
+.res.r{background:#3a1d1d;border:1px solid #8a3a3a}
+.res.y{background:#3a3218;border:1px solid #8a7a3a}
+.code{background:#0f131a;border:1px solid #26324a;border-radius:10px;padding:9px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.65;white-space:pre;overflow-x:auto;margin-top:8px}
+.code .k{color:#ff9bd2}.code .s{color:#a5e38a}.code .c{color:#6b7a90}.code .n{color:#ffd166}.code .f{color:#7cc4ff}
+.out{background:#0b0e13;border-radius:10px;padding:8px 11px;margin-top:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;white-space:pre-wrap;word-break:break-all}
+.out .p{color:#6b7a90}.out .o{color:#6fdc9a}.out .w{color:#ffd166}.out .e{color:#ff7d7d}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.opts button{text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.92rem;font-family:ui-monospace,Menlo,Consolas,monospace}
+.opts button.right{border-color:#6fdc9a;background:#16352a}
+.opts button.wrong{border-color:#ff7d7d;background:#3a1d1d}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.stats div{background:var(--card2);border-radius:10px;padding:7px 6px;text-align:center;font-size:.74rem;color:var(--mut)}
+.stats div b{display:block;font-size:1.02rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:76px 1fr 54px;gap:8px;align-items:center;font-size:.84rem;margin-top:6px}
+.sl b{text-align:right;font-variant-numeric:tabular-nums}
+.big{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem;word-break:break-all;line-height:1.5}
+.big .ok{color:#6fdc9a}.big .bad{color:#ff7d7d;text-decoration:underline}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.steps button{padding:8px 4px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.78rem;font-weight:700}
+.steps button.on{border-color:var(--gold);background:#4a3e1a}
+.steps button.done{border-color:#2f7a52;background:#16352a}
+input[type=range]{width:100%}
+input[type=text]{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#10141b;color:var(--fg);font-size:.92rem}
+.sum3{margin-top:12px;background:linear-gradient(135deg,#1d3358,#3a2a5a);border-radius:14px;padding:12px 14px}
+.sum3 ol{margin:4px 0;padding-left:20px;font-size:.92rem}
+.mine{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.mine div{display:flex;justify-content:space-between;gap:8px;background:var(--card2);border-radius:10px;padding:8px 10px;font-size:.88rem}
+.mine button{border:0;background:none;color:var(--mut);font-size:.9rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+footer{text-align:center;color:var(--mut);font-size:.78rem;margin-top:18px}
+footer a{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🐇 토끼 행렬 계산소<small>21자리 수가 1.618 하나로? — 행렬의 대각화</small></h1>
+<div class="tabs">
+  <button class="on" data-tab="t1">① 대각 행렬</button>
+  <button data-tab="t2">② 대각화</button>
+  <button data-tab="t3">③ 거듭제곱</button>
+  <button data-tab="t4">④ 대칭</button>
+</div>
+
+<!-- ① -->
+<section id="tab-t1">
+  <div class="card">
+    <h2>🐇 사건 접수: 백 번째 피보나치 수</h2>
+    <p class="note" style="margin-top:0">1, 1, 2, 3, 5, 8 … 앞의 두 수를 더해 다음 수. n을 움직여 세 가지 계산을 비교하세요.</p>
+    <div class="sl"><span>n번째</span><input type="range" id="fbN" min="1" max="100" value="100"><b id="fbNv">100</b></div>
+    <div class="out big" id="fbOut"></div>
+    <div class="say q"><b>1.618…</b>을 n제곱하고 √5로 나눠 반올림하면, 99번 더한 21자리가 <b>한 자리도 틀리지 않고</b> 나옵니다(정밀도를 넉넉히 줄 때). 1.618의 정체는 <b>③ 거듭제곱</b>에서!</div>
+  </div>
+
+  <div class="card">
+    <h2>⚡ 계산이 가장 쉬운 행렬: 대각 행렬</h2>
+    <div class="sl"><span>거듭제곱 n</span><input type="range" id="dgN" min="1" max="20" value="10"><b id="dgNv">10</b></div>
+    <div class="out" id="dgOut"></div>
+    <div class="stats"><div>일반 3×3 n제곱<b id="dgA">-</b><span>곱셈 수(차례로 곱하기)</span></div><div>대각 3×3 n제곱<b id="dgB">-</b><span>숫자 3개만 거듭제곱</span></div><div>3×3 한 번 곱셈<b>27번</b></div></div>
+    <canvas id="dgCv"></canvas>
+    <div class="say">대각선 바깥이 모두 0이면 <b>각 축이 서로 섞이지 않고 따로 늘어나기만</b> 합니다. 그래서 행렬 곱셈이 숫자 계산이 됩니다.</div>
+  </div>
+</section>
+
+<!-- ② -->
+<section id="tab-t2" hidden>
+  <div class="card">
+    <h2>👓 같은 변환, 다른 좌표: A = P D P⁻¹</h2>
+    <p class="note" style="margin-top:0">A = [4 1; 2 3]이 원을 어떻게 바꾸는지, 세 단계로 나눠 봅니다.</p>
+    <div class="steps" id="smSt"><button data-s="0">원래 원</button><button data-s="1">① P⁻¹ 좌표 바꾸기</button><button data-s="2">② D 축마다 늘이기</button><button data-s="3">③ P 되돌리기</button></div>
+    <canvas id="smCv"></canvas>
+    <div id="smMsg"></div>
+    <div class="row" style="margin-top:8px"><button class="btn sec sm" id="smPlay">▶ 차례로 재생</button></div>
+  </div>
+
+  <div class="card">
+    <h2>🪜 대각화 네 단계</h2>
+    <div class="steps" id="d4St"><button data-k="1">1 고유값</button><button data-k="2">2 고유벡터</button><button data-k="3">3 P 만들기</button><button data-k="4">4 D 만들기</button></div>
+    <div class="out" id="d4Out"></div>
+    <div id="d4Msg"></div>
+  </div>
+
+  <div class="card">
+    <h2>❓ 퀴즈 ①</h2>
+    <div class="say q">다음 중 <b>대각화할 수 없는</b> 행렬은?</div>
+    <div class="opts" id="qz1"><button data-a="1">[2 0; 0 5]</button><button data-a="2">[2 1; 0 3]</button><button data-a="3">[2 1; 0 2]</button></div>
+    <div id="qz1Msg"></div>
+    <canvas id="q1Cv"></canvas>
+  </div>
+</section>
+
+<!-- ③ -->
+<section id="tab-t3" hidden>
+  <div class="card">
+    <h2>🚀 거듭제곱의 지름길: Aⁿ = P Dⁿ P⁻¹</h2>
+    <p class="note" style="margin-top:0">PDP⁻¹을 n번 곱하면 가운데의 P⁻¹P가 모두 <b>단위 행렬</b>이 되어 사라집니다.</p>
+    <div class="sl"><span>n</span><input type="range" id="pwN" min="1" max="20" value="10"><b id="pwNv">10</b></div>
+    <div class="out" id="pwOut"></div>
+    <div id="pwMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>❓ 퀴즈 ②</h2>
+    <div class="say q">피보나치 수열에서 이웃한 두 수의 비율 2/1, 3/2, 5/3, 8/5 … 수가 커질수록 어디로 다가갈까요?</div>
+    <div class="opts" id="qz2"><button data-a="1.5">1.5</button><button data-a="1.618">1.618</button><button data-a="2">2</button></div>
+    <div id="qz2Msg"></div>
+    <canvas id="rtCv"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>🌀 첫 장면의 비밀: 황금비 고유값</h2>
+    <p class="note" style="margin-top:0">피보나치 행렬 <b>[1 1; 1 0]</b>의 고유값 φ ≈ 1.618, ψ ≈ −0.618. Fₙ = (φⁿ − ψⁿ) / √5.</p>
+    <div class="sl"><span>n</span><input type="range" id="gdN" min="1" max="30" value="10"><b id="gdNv">10</b></div>
+    <canvas id="gdCv"></canvas>
+    <div class="out" id="gdOut"></div>
+    <div id="gdMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>📮 오래 지나면 남는 것: 마르코프 체인</h2>
+    <p class="note" style="margin-top:0">유지한 구독자의 <b>90%</b>는 다음 달도 유지, 이탈한 사람의 <b>20%</b>는 돌아옵니다. 전이 행렬 [0.9 0.2; 0.1 0.8].</p>
+    <div class="sl"><span>처음 유지</span><input type="range" id="mkS" min="0" max="100" step="5" value="0"><b id="mkSv">0%</b></div>
+    <div class="sl"><span>몇 달 뒤</span><input type="range" id="mkK" min="0" max="30" value="20"><b id="mkKv">20</b></div>
+    <canvas id="mkCv"></canvas>
+    <div class="out" id="mkOut"></div>
+  </div>
+</section>
+
+<!-- ④ -->
+<section id="tab-t4" hidden>
+  <div class="card">
+    <h2>🪞 거울처럼 접히는 대칭 행렬</h2>
+    <p class="note" style="margin-top:0">a, d와 <b>b(대각선 양쪽에 같은 값)</b>를 바꿔 보세요. 고유벡터가 늘 <b>직각</b>인지 확인합니다.</p>
+    <div class="sl"><span>a</span><input type="range" id="syA" min="-3" max="4" step="0.5" value="2"><b id="syAv">2</b></div>
+    <div class="sl"><span>b = c</span><input type="range" id="syB" min="-3" max="3" step="0.5" value="1"><b id="syBv">1</b></div>
+    <div class="sl"><span>d</span><input type="range" id="syD" min="-3" max="4" step="0.5" value="2"><b id="syDv">2</b></div>
+    <div class="row" style="margin-top:6px"><button class="pill on" data-sy="sym">대칭 [a b; b d]</button><button class="pill" data-sy="ns">비대칭 비교 [4 1; 2 3]</button></div>
+    <canvas id="syCv"></canvas>
+    <div class="stats"><div>고유값<b id="syL">-</b></div><div>고유벡터 내적<b id="syDot">-</b></div><div>사이 각<b id="syAng">-</b></div></div>
+    <div id="syMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔄 역행렬이 필요 없는 직교 대각화: A = Q Λ Qᵀ</h2>
+    <div class="steps" id="qlSt"><button data-q="0">원</button><button data-q="1">Qᵀ 회전</button><button data-q="2">Λ 늘이기</button><button data-q="3">Q 되돌림</button></div>
+    <canvas id="qlCv"></canvas>
+    <div class="out" id="qlOut"></div>
+    <div class="say">길이를 1로 맞춘 직각 고유벡터를 기둥으로 세운 Q는 <b>Q⁻¹ = Qᵀ</b> — 무거운 역행렬 계산이 <b>자리 바꾸기</b>로 끝납니다. 공분산 행렬을 이렇게 나누면 Q의 기둥이 <b>주성분</b> 방향, Λ가 그 방향의 분산입니다.</div>
+  </div>
+
+  <div class="card">
+    <h2>🐍 파이썬으로 확인하기</h2>
+    <div class="code"><span class="k">import</span> numpy <span class="k">as</span> np
+A = np.array([[<span class="n">4</span>, <span class="n">1</span>], [<span class="n">2</span>, <span class="n">3</span>]])
+w, P = np.linalg.eig(A)                 <span class="c"># w = [5, 2], P의 기둥 = 고유벡터</span>
+A10 = P @ np.diag(w**<span class="n">10</span>) @ np.linalg.inv(P)  <span class="c"># 6510758 …</span>
+
+S = np.array([[<span class="n">2</span>, <span class="n">1</span>], [<span class="n">1</span>, <span class="n">2</span>]])
+lam, Q = np.linalg.eigh(S)              <span class="c"># 대칭: 실수 고유값 [1, 3], 직교 Q</span>
+np.allclose(Q @ np.diag(lam) @ Q.T, S)  <span class="c"># True — 역행렬 대신 전치</span>
+
+phi = (<span class="n">1</span> + <span class="n">5</span>**<span class="n">.5</span>) / <span class="n">2</span>
+<span class="f">round</span>(phi**<span class="n">100</span> / <span class="n">5</span>**<span class="n">.5</span>)   <span class="c"># 354224848179263111168 ← 뒷자리 틀림!</span>
+<span class="c"># 정수 행렬 거듭제곱이나 decimal(정밀도 60)이면 21자리 정확</span></div>
+  </div>
+
+  <div class="card">
+    <h2>📌 세 줄 정리</h2>
+    <div class="sum3"><ol>
+      <li><b>대각 행렬</b>의 거듭제곱은 대각선 숫자만 거듭제곱하면 된다.</li>
+      <li>독립인 고유벡터가 <b>n개</b>면 A = <b>P D P⁻¹</b>로 대각화되고, Aⁿ은 <b>D만 n제곱</b>하면 된다.</li>
+      <li><b>대칭 행렬</b>은 실수 고유값과 직각 고유벡터를 가져 <b>Q Λ Qᵀ</b>로 깔끔하게 나뉜다.</li>
+    </ol></div>
+  </div>
+
+  <div class="card">
+    <h2>🤔 생각해 볼 질문</h2>
+    <p class="note" style="margin-top:0">주변에서 <b>같은 규칙이 계속 되풀이되는</b> 현상을 하나 떠올려 보세요. 그 규칙을 행렬로 쓴다면 가장 큰 고유값은 1보다 클까요, 작을까요? (이 기기에만 저장)</p>
+    <div class="row" style="margin-top:8px"><input type="text" id="myIn" maxlength="60" placeholder="예: 적금 이자 — 1보다 큼"><button class="btn sm" id="myAdd">추가</button></div>
+    <div class="mine" id="mine"></div>
+  </div>
+</section>
+
+<footer>© 2026 정필 수심명 · <a href="https://blog.naver.com/omyman" target="_blank" rel="noopener">blog.naver.com/omyman</a><br>선형대수 09 부록 · 인터넷 없이 동작</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1800);}
+const vib=n=>{try{navigator.vibrate&&navigator.vibrate(n);}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function prep(cv,ratio){const dpr=Math.min(2,window.devicePixelRatio||1),w=cv.clientWidth||320,h=Math.round(w*ratio);
+  cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return{c,w,h};}
+function T(c,s,x,y,col,size,al,bl,wt){c.fillStyle=col;c.font=`${wt||''} ${size||12}px -apple-system,"Malgun Gothic",sans-serif`;c.textAlign=al||'center';c.textBaseline=bl||'middle';c.fillText(s,x,y);}
+function single(sel,attr,fn){$$(sel).forEach(b=>b.onclick=()=>{$$(sel).forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset[attr]);});}
+function quiz(id,ans,fn){$$(`#${id} button`).forEach(b=>b.onclick=()=>{const ok=b.dataset.a===ans;$$(`#${id} button`).forEach(x=>x.className=x.dataset.a===ans?'right':x===b?'wrong':'');vib(ok?[30,40,60]:80);$(`#${id}Msg`).innerHTML=fn(ok);});}
+const CA='#7cc4ff',CB='#ff9b5c',sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fmt=b=>b.toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');
+function arrow(c,x0,y0,x1,y1,col,lw){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=lw||3;const dx=x1-x0,dy=y1-y0,L=Math.hypot(dx,dy);if(L<2)return;const ux=dx/L,uy=dy/L,hh=Math.min(11,L*.4);
+  c.beginPath();c.moveTo(x0,y0);c.lineTo(x1-ux*hh*.8,y1-uy*hh*.8);c.stroke();c.beginPath();c.moveTo(x1,y1);c.lineTo(x1-ux*hh-uy*hh*.5,y1-uy*hh+ux*hh*.5);c.lineTo(x1-ux*hh+uy*hh*.5,y1-uy*hh-ux*hh*.5);c.closePath();c.fill();}
+
+/* ===== 고정밀 φⁿ/√5 (BigInt 고정소수점, 소수 60자리) ===== */
+const SC=10n**60n;
+function bsqrt(n){if(n<2n)return n;let x=BigInt(Math.floor(Math.sqrt(Number(n))));if(x===0n)x=1n;for(;;){const y=(x+n/x)>>1n;if(y>=x-1n&&y<=x+1n){let r=y;while(r*r>n)r--;while((r+1n)*(r+1n)<=n)r++;return r;}x=y;}}
+const SQ5=bsqrt(5n*SC*SC);/* √5 × 10^60 */const PHI=(SC+SQ5)/2n;
+function phiPowOverSqrt5(n){let p=SC;for(let i=0;i<n;i++)p=p*PHI/SC;return p*SC/SQ5;/* ×10^60 */}
+function fibBig(n){let a=0n,b=1n;for(let i=0;i<n;i++){[a,b]=[b,a+b];}return a;}
+function fbDraw(){const n=+$('#fbN').value;$('#fbNv').textContent=n;const ex=fibBig(n),exS=ex.toString();
+  const hp=phiPowOverSqrt5(n),hpR=(hp+SC/2n)/SC,hpFrac=(hp%SC).toString().padStart(60,'0').slice(0,8);
+  const fl=Math.round(Math.pow((1+Math.sqrt(5))/2,n)/Math.sqrt(5));const flS=BigInt(Math.round(fl)).toString();
+  const mark=(s)=>{let o='';for(let i=0;i<s.length;i++)o+=(s[i]===exS[i]&&s.length===exS.length)?`<span class="ok">${s[i]}</span>`:`<span class="bad">${s[i]}</span>`;return o;};
+  let same=0;for(let i=0;i<Math.min(flS.length,exS.length);i++){if(flS[i]===exS[i])same++;else break;}
+  $('#fbOut').innerHTML=`<span class="p">① 차례로 ${Math.max(0,n-2)}번 더하기 (정확)</span>\n<span class="o">${exS}</span>  <span class="p">${exS.length}자리</span>\n\n<span class="p">② φⁿ/√5 반올림 — 보통 실수(float64)</span>\n${mark(flS)}  <span class="p">${flS===exS?'일치':'앞 '+same+'자리만 일치'}</span>\n\n<span class="p">③ φⁿ/√5 — 정밀도 60자리</span>\n<span class="w">${hpR.toString()}</span><span class="p">.${hpFrac}… → 반올림 </span>${hpR===ex?'<span class="o">일치 ✔</span>':'<span class="e">불일치</span>'}`;}
+$('#fbN').oninput=fbDraw;
+
+/* ===== ① 대각 행렬 ===== */
+function dgDraw(){const n=+$('#dgN').value;$('#dgNv').textContent=n;const p=k=>BigInt(k)**BigInt(n);
+  $('#dgOut').innerHTML=`<span class="p">D = diag(2, 3, 5)  →  D^${n} = diag(2^${n}, 3^${n}, 5^${n})</span>\n= diag(<span class="o">${fmt(p(2))}</span>, <span class="o">${fmt(p(3))}</span>, <span class="o">${fmt(p(5))}</span>)`;
+  $('#dgA').textContent=((n-1)*27).toLocaleString()+'번';$('#dgB').textContent='3개';
+  const{c,w,h}=prep($('#dgCv'),.46);const cx=w*.27,cy=h*.55,S=Math.min(w,h)/7;
+  /* 대각: 2축만 표시 (2, 3) */[[cx,'대각 [2 0; 0 3]',[2,0,0,3]],[w*.73,'일반 [2 1; 1 3]',[2,1,1,3]]].forEach(([ox,lab,m])=>{c.strokeStyle='#33425a';c.beginPath();c.rect(ox-S*.5,cy-S*.5,S,S);c.stroke();
+    c.fillStyle=m[1]?'#ff9b5c44':'#7cc4ff44';c.strokeStyle=m[1]?CB:CA;c.lineWidth=2;c.beginPath();[[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].forEach(([x,y],i)=>{const X=m[0]*x+m[1]*y,Y=m[2]*x+m[3]*y;i?c.lineTo(ox+X*S*.55,cy-Y*S*.55):c.moveTo(ox+X*S*.55,cy-Y*S*.55);});c.closePath();c.fill();c.stroke();
+    T(c,lab,ox,14,m[1]?CB:CA,11,'center','middle','700');T(c,m[1]?'축이 섞여 비스듬해짐':'가로 2배, 세로 3배 — 따로',ox,h-10,'#a3b0c2',10);});}
+$('#dgN').oninput=dgDraw;
+
+/* ===== ② 닮음 단계 ===== */
+const A0=[4,1,2,3],Pm=[1,1,1,-2],Pinv=(()=>{const d=Pm[0]*Pm[3]-Pm[1]*Pm[2];return[Pm[3]/d,-Pm[1]/d,-Pm[2]/d,Pm[0]/d];})(),Dm=[5,0,0,2];
+const mul=(m,v)=>[m[0]*v[0]+m[1]*v[1],m[2]*v[0]+m[3]*v[1]];
+let smS=0;
+function smDraw(){const{c,w,h}=prep($('#smCv'),.72);const cx=w/2,cy=h/2;const pts=[];for(let i=0;i<=72;i++){const t=i/72*2*Math.PI;pts.push([Math.cos(t),Math.sin(t)]);}
+  const stage=v=>{let u=v;if(smS>=1)u=mul(Pinv,u);if(smS>=2)u=mul(Dm,u);if(smS>=3)u=mul(Pm,u);return u;};
+  const all=pts.map(stage);const mx=Math.max(1.5,...all.map(p=>Math.max(Math.abs(p[0]),Math.abs(p[1]))));const S=Math.min(w,h)/2.3/mx;
+  c.strokeStyle='#1f2a38';for(let k=-10;k<=10;k++){c.beginPath();c.moveTo(cx+k*S,0);c.lineTo(cx+k*S,h);c.stroke();c.beginPath();c.moveTo(0,cy+k*S);c.lineTo(w,cy+k*S);c.stroke();}
+  c.strokeStyle='#33425a';c.beginPath();c.moveTo(0,cy);c.lineTo(w,cy);c.moveTo(cx,0);c.lineTo(cx,h);c.stroke();
+  /* 고유 방향 */const eig=[[1,1,'#6fdc9a','λ=5 방향 (1,1)'],[1,-2,'#b79cff','λ=2 방향 (1,−2)']];
+  eig.forEach(([x,y,col,lab],k)=>{let v=[x,y];if(smS===1||smS===2)v=k===0?[1,0]:[0,1];const n=Math.hypot(v[0],v[1]);c.strokeStyle=col+'88';c.lineWidth=2;c.beginPath();c.moveTo(cx-v[0]/n*w,cy+v[1]/n*w);c.lineTo(cx+v[0]/n*w,cy-v[1]/n*w);c.stroke();T(c,(smS===1||smS===2)?(k?'새 y축 (λ=2)':'새 x축 (λ=5)'):lab,8,14+k*14,col,10,'left');});
+  c.fillStyle='#ffd16633';c.strokeStyle='#ffd166';c.lineWidth=2.5;c.beginPath();all.forEach((p,i)=>i?c.lineTo(cx+p[0]*S,cy-p[1]*S):c.moveTo(cx+p[0]*S,cy-p[1]*S));c.closePath();c.fill();c.stroke();
+  const v1=stage([1,0]),v2=stage([0,1]);arrow(c,cx,cy,cx+v1[0]*S,cy-v1[1]*S,CA,3);arrow(c,cx,cy,cx+v2[0]*S,cy-v2[1]*S,CB,3);
+  $$('#smSt button').forEach(b=>b.classList.toggle('on',+b.dataset.s===smS));
+  const M=['단위원. 파랑·주황 화살표는 (1,0), (0,1).','<b>P⁻¹</b>: 좌표를 고유벡터 기준으로 바꿉니다. 초록·보라 고유 방향이 새 <b>x·y축</b>이 됐습니다.','<b>D = diag(5, 2)</b>: 새 좌표에서는 축마다 <b>늘리기만</b>! x축 5배, y축 2배.','<b>P</b>: 원래 좌표로 돌아오니 결과는 A를 직접 곱한 것과 <b>똑같은 비스듬한 타원</b>. A와 D는 같은 변환을 다른 좌표에서 본 <b>닮은 행렬</b> — 고유값·대각합(7)·행렬식(10)이 같습니다.'];
+  $('#smMsg').innerHTML=`<div class="res ${smS===3?'g':'y'}">${M[smS]}</div>`;}
+single('#smSt button','s',v=>{smS=+v;smDraw();});
+$('#smPlay').onclick=async()=>{for(let s=0;s<4;s++){smS=s;smDraw();await sleep(1100);}};
+
+/* ===== ② 네 단계 ===== */
+let d4K=0;const D4=[
+ `<span class="p">1단계 특성 방정식</span>\ndet(A − λI) = (4−λ)(3−λ) − 2 = λ² − 7λ + 10 = 0\n→ (λ − 5)(λ − 2) = 0   <span class="o">λ = 5, 2</span>`,
+ `<span class="p">2단계 고유벡터</span>\nλ=5: A − 5I = [−1 1; 2 −2] → x = y       <span class="o">(1, 1)</span>\nλ=2: A − 2I = [2 1; 2 1]  → y = −2x      <span class="o">(1, −2)</span>`,
+ `<span class="p">3단계 고유벡터를 기둥으로</span>\nP = [ <span class="w">1</span>   <span class="w">1</span> ]\n    [ <span class="w">1</span>  <span class="w">−2</span> ]      <span class="p">P⁻¹ = (1/3)[2 1; 1 −1]</span>`,
+ `<span class="p">4단계 같은 순서로 고유값</span>\nD = [ <span class="o">5</span>  0 ]\n    [ 0  <span class="o">2</span> ]\n\n<span class="p">검산</span> P D P⁻¹ = [1 1;1 −2][5 0;0 2](1/3)[2 1;1 −1] = <span class="o">[4 1; 2 3]</span> ✔`];
+$$('#d4St button').forEach(b=>b.onclick=()=>{d4K=+b.dataset.k;$$('#d4St button').forEach(x=>{const k=+x.dataset.k;x.className=k<d4K?'done':k===d4K?'on':'';});$('#d4Out').innerHTML=D4.slice(0,d4K).join('\n\n');
+  $('#d4Msg').innerHTML=d4K===4?'<div class="res g">고유벡터를 첫째 기둥에 놓았으면 그 고유값도 <b>첫째 자리</b>에. 순서만 맞추면 PDP⁻¹이 원래 A로 정확히 돌아옵니다.</div>':'';vib(15);});
+
+/* ===== ② 퀴즈 ① ===== */
+const QM={1:[2,0,0,5],2:[2,1,0,3],3:[2,1,0,2]};let q1Sel=null;
+function q1Draw(){const{c,w,h}=prep($('#q1Cv'),.4);const pw=w/3;['1','2','3'].forEach((k,i)=>{const m=QM[k],ox=pw*i+pw/2,cy=h*.55,S=pw*.32;c.strokeStyle='#33425a';c.beginPath();c.moveTo(ox-S*1.3,cy);c.lineTo(ox+S*1.3,cy);c.moveTo(ox,cy-S*1.3);c.lineTo(ox,cy+S*1.3);c.stroke();
+    let n=0;for(let a=0;a<180;a+=1){const t=a*Math.PI/180,v=[Math.cos(t),Math.sin(t)],Av=mul(m,v);if(Math.abs(v[0]*Av[1]-v[1]*Av[0])<1e-9){n++;c.strokeStyle='#6fdc9a';c.lineWidth=3;c.beginPath();c.moveTo(ox-v[0]*S*1.2,cy+v[1]*S*1.2);c.lineTo(ox+v[0]*S*1.2,cy-v[1]*S*1.2);c.stroke();}}
+    if(k==='1'){/* 대각: 0°, 90° */}
+    T(c,`[${m[0]} ${m[1]}; ${m[2]} ${m[3]}]`,ox,12,'#eff3f8',11,'center','middle','700');T(c,`고유 방향 ${n}개`,ox,h-10,n<2?'#ff7d7d':'#6fdc9a',11,'center','middle','700');});}
+quiz('qz1','3',ok=>{q1Draw();return `<div class="res ${ok?'g':'r'}">${ok?'정답!':'정답은 <b>[2 1; 0 2]</b>입니다.'} 고유값이 <b>2 하나로 겹치는데</b> 고유벡터는 (1, 0) 방향 <b>하나뿐</b> — 2개가 필요한데 모자라는 <b>결함 행렬</b>. [2 1; 0 3]은 고유값 2와 3으로 달라서 대각화됩니다. 판정의 핵심은 생김새가 아니라 <b>독립인 고유벡터의 개수</b>(아래 초록 선).</div>`;});
+
+/* ===== ③ 거듭제곱 ===== */
+function matPowBig(m,n){let R=[1n,0n,0n,1n],B=m.map(BigInt);const mm=(X,Y)=>[X[0]*Y[0]+X[1]*Y[2],X[0]*Y[1]+X[1]*Y[3],X[2]*Y[0]+X[3]*Y[2],X[2]*Y[1]+X[3]*Y[3]];for(let i=0;i<n;i++)R=mm(R,B);return R;}
+function pwDraw(){const n=+$('#pwN').value;$('#pwNv').textContent=n;const R=matPowBig(A0,n);const f5=5n**BigInt(n),f2=2n**BigInt(n);
+  /* P Dⁿ P⁻¹ = (1/3)[[2·5ⁿ+2ⁿ, 5ⁿ−2ⁿ],[2·5ⁿ−2·2ⁿ, 5ⁿ+2·2ⁿ]] */
+  const F=[(2n*f5+f2)/3n,(f5-f2)/3n,(2n*f5-2n*f2)/3n,(f5+2n*f2)/3n];const same=F.every((v,i)=>v===R[i]);
+  $('#pwOut').innerHTML=`<span class="p">차례로 곱하기: 행렬 곱 ${n-1}번 (2×2 한 번에 곱셈 8번)</span>\nA^${n} = [${fmt(R[0])}, ${fmt(R[1])}; ${fmt(R[2])}, ${fmt(R[3])}]\n\n<span class="p">지름길: P D^${n} P⁻¹ — 숫자 두 개만 거듭제곱</span>\n5^${n} = <span class="w">${fmt(f5)}</span>,  2^${n} = <span class="w">${fmt(f2)}</span>\n왼쪽 위 = (2·5^${n} + 2^${n}) / 3 = <span class="o">${fmt(F[0])}</span>\n\n${same?'<span class="o">네 칸 모두 정확히 일치 ✔</span>':'<span class="e">불일치</span>'}`;
+  $('#pwMsg').innerHTML=n===10?'<div class="res g">원고: 왼쪽 위 <b>6,510,758</b> — 직접 열 번 곱한 결과와 정확히 같습니다.</div>':'';}
+$('#pwN').oninput=pwDraw;
+
+/* 비율 */
+function rtDraw(){const{c,w,h}=prep($('#rtCv'),.42);const L=40,R=w-10,Tp=12,B=h-22;const N=15,sy=v=>B-(v-1.4)/(.65)*(B-Tp),sx=k=>L+(k-1)/(N-1)*(R-L);const phi=(1+Math.sqrt(5))/2;
+  c.strokeStyle='#ffd16688';c.setLineDash([4,3]);c.beginPath();c.moveTo(L,sy(phi));c.lineTo(R,sy(phi));c.stroke();c.setLineDash([]);T(c,'1.618…',L-4,sy(phi),'#ffd166',10,'right');[1.5,2].forEach(v=>T(c,String(v),L-4,sy(v),'#a3b0c2',9,'right'));
+  let a=1,b=1;const pts=[];for(let k=1;k<=N;k++){[a,b]=[b,a+b];pts.push(b/a);}c.strokeStyle=CA;c.lineWidth=2;c.beginPath();pts.forEach((v,k)=>k?c.lineTo(sx(k+1),sy(v)):c.moveTo(sx(k+1),sy(v)));c.stroke();
+  pts.forEach((v,k)=>{c.beginPath();c.arc(sx(k+1),sy(v),3.5,0,7);c.fillStyle=CA;c.fill();if(k<6&&k>1)T(c,v.toFixed(3),sx(k+1),sy(v)+(k%2?-12:12),'#a3b0c2',9);});T(c,'이웃 두 수의 비율',R,B+12,'#a3b0c2',9,'right');}
+quiz('qz2','1.618',ok=>{rtDraw();return `<div class="res ${ok?'g':'r'}">${ok?'정답!':'정답은 <b>1.618</b>입니다.'} 황금비. 13/8 = 1.625, 21/13 = 1.615 … <b>위아래로 흔들리며</b> 1.618로 다가갑니다(아래 그래프). 첫 장면의 그 숫자 — 바로 이어서!</div>`;});
+
+/* 황금비 고유값 */
+function gdDraw(){const n=+$('#gdN').value;$('#gdNv').textContent=n;const phi=(1+Math.sqrt(5))/2,psi=(1-Math.sqrt(5))/2;const{c,w,h}=prep($('#gdCv'),.46);const L=12,R=w-12,Tp=14,B=h-22,mid=(Tp+B)/2;
+  /* 로그 스케일 크기 막대 */const sx=k=>L+(k-.5)/30*(R-L);c.strokeStyle='#33425a';c.beginPath();c.moveTo(L,mid);c.lineTo(R,mid);c.stroke();
+  for(let k=1;k<=30;k++){const a=Math.log10(Math.pow(phi,k)),b=Math.log10(Math.abs(Math.pow(psi,k)));const sc=(B-Tp)/2/7;c.fillStyle=k===n?'#ffd166':CB;c.fillRect(sx(k)-3,mid-a*sc,6,a*sc);const lb=Math.abs(Math.pow(psi,k))*(B-Tp)/2/.7;c.fillStyle=k===n?'#ffd166':'#b79cff';c.fillRect(sx(k)-3,mid,6,lb);}
+  T(c,'|φⁿ| (위, 로그 눈금)',L,Tp,CB,10,'left','top');T(c,'|ψⁿ| (아래, 보통 눈금) → 0으로 사라짐',R,B,'#b79cff',10,'right','bottom');
+  const fp=Math.pow(phi,n),fq=Math.pow(psi,n),F=Number(fibBig(n));
+  $('#gdOut').innerHTML=`φ^${n} = <span class="w">${fp.toFixed(4)}</span>   ψ^${n} = <span class="${Math.abs(fq)<.01?'o':'w'}">${fq.toFixed(6)}</span>\n(φ^${n} − ψ^${n}) / √5 = <span class="o">${((fp-fq)/Math.sqrt(5)).toFixed(4)}</span>  →  F${n} = <span class="o">${F}</span>\nφ^${n} / √5 만 = ${(fp/Math.sqrt(5)).toFixed(4)}  → 반올림 <span class="o">${Math.round(fp/Math.sqrt(5))}</span>`;
+  $('#gdMsg').innerHTML=`<div class="res g">ψ ≈ −0.618은 <b>절댓값이 1보다 작아서</b> 거듭제곱할수록 0으로 사라집니다(부호도 번갈아 바뀜). 그래서 큰 고유값 φ 하나만 남고, <b>반올림만</b> 하면 정확한 값. 이웃 수의 비율이 황금비로 가는 것도 φ가 결국 모든 것을 <b>지배</b>하기 때문입니다.</div>`;}
+$('#gdN').oninput=gdDraw;
+
+/* 마르코프 */
+function mkDraw(){const s=+$('#mkS').value/100,K=+$('#mkK').value;$('#mkSv').textContent=Math.round(s*100)+'%';$('#mkKv').textContent=K;const{c,w,h}=prep($('#mkCv'),.42);const L=36,R=w-10,Tp=12,B=h-22,sx=k=>L+k/30*(R-L),sy=v=>B-v*(B-Tp);
+  c.strokeStyle='#33425a';c.beginPath();c.moveTo(L,Tp);c.lineTo(L,B);c.lineTo(R,B);c.stroke();[0,1/3,2/3,1].forEach(v=>T(c,(v*100).toFixed(0)+'%',L-4,sy(v),Math.abs(v-2/3)<1e-9?'#ffd166':'#a3b0c2',9,'right'));
+  c.strokeStyle='#ffd16677';c.setLineDash([4,3]);c.beginPath();c.moveTo(L,sy(2/3));c.lineTo(R,sy(2/3));c.stroke();c.setLineDash([]);
+  let v=[s,1-s];const tr=[v];for(let k=0;k<30;k++){v=[.9*v[0]+.2*v[1],.1*v[0]+.8*v[1]];tr.push(v);}
+  c.strokeStyle=CA;c.lineWidth=2.5;c.beginPath();tr.slice(0,K+1).forEach((p,k)=>k?c.lineTo(sx(k),sy(p[0])):c.moveTo(sx(k),sy(p[0])));c.stroke();c.beginPath();c.arc(sx(K),sy(tr[K][0]),5,0,7);c.fillStyle='#ffd166';c.fill();
+  T(c,'유지 비율',L+4,Tp+4,'#a3b0c2',10,'left','top');[0,10,20,30].forEach(k=>T(c,k+'달',sx(k),B+12,'#a3b0c2',9));
+  const c0=s-2/3;$('#mkOut').innerHTML=`<span class="p">고유값 1 → 평형 (2/3, 1/3),  고유값 0.7 → 0.7^${K} = ${Math.pow(.7,K).toFixed(4)}</span>\n${K}달 뒤 유지 = 2/3 + (${c0.toFixed(3)}) × 0.7^${K} = <span class="o">${tr[K][0].toFixed(3)}</span>${s===0&&K===20?'  <span class="p">(원고: 0.666)</span>':''}`;}
+['mkS','mkK'].forEach(id=>$('#'+id).oninput=mkDraw);
+
+/* ===== ④ 대칭 ===== */
+let syM='sym';
+function eig2(a,b,c,d){const tr=a+d,det=a*d-b*c,D=tr*tr-4*det;if(D<-1e-12)return null;const s=Math.sqrt(Math.max(0,D)),l1=(tr+s)/2,l2=(tr-s)/2;
+  const vec=l=>{let v;if(Math.abs(b)>1e-9)v=[b,l-a];else if(Math.abs(c)>1e-9)v=[l-d,c];else v=Math.abs(a-l)<1e-9?[1,0]:[0,1];const n=Math.hypot(...v);return[v[0]/n,v[1]/n];};let v1=vec(l1),v2=vec(l2);
+  if(Math.abs(l1-l2)<1e-9&&Math.abs(b)<1e-9&&Math.abs(c)<1e-9){v1=[1,0];v2=[0,1];}return{l1,l2,v1,v2};}
+function syGet(){if(syM==='ns')return[4,1,2,3];const a=+$('#syA').value,b=+$('#syB').value,d=+$('#syD').value;return[a,b,b,d];}
+function syDraw(){['syA','syB','syD'].forEach(id=>$('#'+id+'v').textContent=$('#'+id).value);const m=syGet(),E=eig2(...m);const{c,w,h}=prep($('#syCv'),.7);const cx=w/2,cy=h/2;
+  const pts=[];for(let i=0;i<=72;i++){const t=i/72*2*Math.PI;pts.push(mul(m,[Math.cos(t),Math.sin(t)]));}const mx=Math.max(1.3,...pts.map(p=>Math.hypot(p[0],p[1])));const S=Math.min(w,h)/2.3/mx;
+  c.strokeStyle='#33425a';c.beginPath();c.moveTo(0,cy);c.lineTo(w,cy);c.moveTo(cx,0);c.lineTo(cx,h);c.stroke();c.strokeStyle='#55667f';c.setLineDash([3,4]);c.beginPath();c.arc(cx,cy,S,0,7);c.stroke();c.setLineDash([]);
+  c.fillStyle='#ffd16622';c.strokeStyle='#ffd166';c.lineWidth=2;c.beginPath();pts.forEach((p,i)=>i?c.lineTo(cx+p[0]*S,cy-p[1]*S):c.moveTo(cx+p[0]*S,cy-p[1]*S));c.closePath();c.fill();c.stroke();
+  if(E){[[E.v1,E.l1,'#6fdc9a'],[E.v2,E.l2,'#b79cff']].forEach(([v,l,col])=>{c.strokeStyle=col+'66';c.lineWidth=1.5;c.beginPath();c.moveTo(cx-v[0]*w,cy+v[1]*w);c.lineTo(cx+v[0]*w,cy-v[1]*w);c.stroke();arrow(c,cx,cy,cx+v[0]*l*S,cy-v[1]*l*S,col,3);T(c,'λ='+(+l.toFixed(2)),cx+v[0]*Math.max(Math.abs(l),.6)*S+(v[0]>=0?8:-8),cy-v[1]*Math.max(Math.abs(l),.6)*S-10,col,11,v[0]>=0?'left':'right','middle','700');});
+    const dot=E.v1[0]*E.v2[0]+E.v1[1]*E.v2[1],ang=Math.acos(Math.min(1,Math.abs(dot)))*180/Math.PI;$('#syL').textContent=`${+E.l1.toFixed(2)}, ${+E.l2.toFixed(2)}`;$('#syDot').textContent=Math.abs(dot)<1e-9?'0':dot.toFixed(3);$('#syAng').textContent=ang.toFixed(1)+'°';
+    const ortho=Math.abs(dot)<1e-6;$('#syMsg').innerHTML=syM==='ns'?`<div class="res r">비대칭 [4 1; 2 3]: 고유벡터 (1,1)과 (1,−2)의 사이 각은 <b>${ang.toFixed(1)}°</b> — 직각이 아닙니다. 그래서 P⁻¹을 따로 계산해야 합니다.</div>`
+      :`<div class="res g">대칭 행렬: 고유값은 늘 <b>실수</b>, 서로 다른 고유값의 고유벡터는 늘 <b>직각</b>(내적 ${Math.abs(dot)<1e-9?0:dot.toFixed(3)}). ${m[0]===2&&m[1]===1&&m[3]===2?'[2 1; 1 2]: 고유값 3과 1, 고유벡터 (1,1)·(1,−1) 내적 0.':'b를 어떻게 바꿔도 노란 타원의 두 축은 직각입니다.'}</div>`;}
+  else{$('#syL').textContent='복소수';$('#syDot').textContent='-';$('#syAng').textContent='-';}}
+['syA','syB','syD'].forEach(id=>$('#'+id).oninput=syDraw);single('[data-sy]','sy',v=>{syM=v;syDraw();});
+
+/* QΛQᵀ 단계 */
+let qlS=0;
+function qlDraw(){const m=[2,1,1,2],E=eig2(...m);const Q=[E.v1[0],E.v2[0],E.v1[1],E.v2[1]],QT=[Q[0],Q[2],Q[1],Q[3]],L=[E.l1,0,0,E.l2];const{c,w,h}=prep($('#qlCv'),.66);const cx=w/2,cy=h/2,S=Math.min(w,h)/7.5;
+  const st=v=>{let u=v;if(qlS>=1)u=mul(QT,u);if(qlS>=2)u=mul(L,u);if(qlS>=3)u=mul(Q,u);return u;};
+  c.strokeStyle='#33425a';c.beginPath();c.moveTo(0,cy);c.lineTo(w,cy);c.moveTo(cx,0);c.lineTo(cx,h);c.stroke();
+  c.fillStyle='#ffd16622';c.strokeStyle='#ffd166';c.lineWidth=2.5;c.beginPath();for(let i=0;i<=72;i++){const t=i/72*2*Math.PI,p=st([Math.cos(t),Math.sin(t)]);i?c.lineTo(cx+p[0]*S,cy-p[1]*S):c.moveTo(cx+p[0]*S,cy-p[1]*S);}c.closePath();c.fill();c.stroke();
+  const a=st(E.v1),b=st(E.v2);arrow(c,cx,cy,cx+a[0]*S,cy-a[1]*S,'#6fdc9a',3);arrow(c,cx,cy,cx+b[0]*S,cy-b[1]*S,'#b79cff',3);
+  /* 원래 x축 점 표시 */const p0=st([1,0]);c.beginPath();c.arc(cx+p0[0]*S,cy-p0[1]*S,5,0,7);c.fillStyle=CA;c.fill();
+  $$('#qlSt button').forEach(x=>x.classList.toggle('on',+x.dataset.q===qlS));
+  $('#qlOut').innerHTML=['<span class="p">A = [2 1; 1 2] = Q Λ Qᵀ,  Q = [0.707 −0.707; 0.707 0.707],  Λ = diag(3, 1)</span>\n초록 = 고유벡터 (1,1)/√2, 보라 = (−1,1)/√2','<span class="w">Qᵀ</span>: 회전 — 고유벡터(초록·보라)가 x·y축으로 돌아왔습니다. <span class="p">(역행렬 대신 전치!)</span>','<span class="w">Λ</span>: 축마다 늘이기 — x축 3배, y축 1배','<span class="w">Q</span>: 되돌리는 회전 → <span class="o">A를 직접 곱한 것과 같은 타원</span>  <span class="p">회전 · 축별 늘이기 · 되돌리는 회전</span>'][qlS];}
+single('#qlSt button','q',v=>{qlS=+v;qlDraw();});
+
+/* 나의 예 */
+const MK='diagrabbit.mine';let mine=[];try{mine=JSON.parse(localStorage.getItem(MK)||'[]');if(!Array.isArray(mine))mine=[];}catch(e){mine=[];}
+const saveM=()=>{try{localStorage.setItem(MK,JSON.stringify(mine));}catch(e){}};
+function drawMine(){$('#mine').innerHTML=mine.length?mine.map((m,i)=>`<div><span>🐇 ${esc(m)}</span><button data-d="${i}" aria-label="지우기">✕</button></div>`).join(''):'<p class="note">그 고유값 하나가 먼 미래의 모습을 결정합니다.</p>';
+  $$('#mine button').forEach(b=>b.onclick=()=>{mine.splice(+b.dataset.d,1);saveM();drawMine();});}
+$('#myAdd').onclick=()=>{const v=$('#myIn').value.trim();if(!v)return;mine.unshift(v);mine=mine.slice(0,30);saveM();$('#myIn').value='';drawMine();toast('되풀이 규칙 기록!');};
+$('#myIn').addEventListener('keydown',e=>{if(e.key==='Enter')$('#myAdd').click();});
+
+/* 탭 */
+function redraw(){if(!$('#tab-t1').hidden){fbDraw();dgDraw();}if(!$('#tab-t2').hidden){smDraw();q1Draw();}if(!$('#tab-t3').hidden){pwDraw();rtDraw();gdDraw();mkDraw();}if(!$('#tab-t4').hidden){syDraw();qlDraw();}}
+function show(t){$$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));['t1','t2','t3','t4'].forEach(k=>$('#tab-'+k).hidden=k!==t);redraw();window.scrollTo(0,0);}
+$$('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(redraw,120);});
+drawMine();redraw();
+})();
+</script>
+</body>
+</html>
